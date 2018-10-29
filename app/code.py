@@ -1,5 +1,10 @@
 import pgmagick as pg
-def trans_mask_sobel(img):
+from os import listdir
+from os.path import isfile, join
+mypath = './input'
+files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+print(files)
+def trans_mask_sobel(img, color="magenta"):
     """ Generate a transparency mask for a given image """
     image = pg.Image(img)
     # Find object
@@ -9,13 +14,13 @@ def trans_mask_sobel(img):
     image.threshold(24)
     image.adaptiveThreshold(5, 5, 5)
     # Fill background
-    image.fillColor('magenta')
+    image.fillColor(color)
     w, h = image.size().width(), image.size().height()
-    image.floodFillColor('0x0', 'magenta')
-    image.floodFillColor('0x0+%s+0' % (w-1), 'magenta')
-    image.floodFillColor('0x0+0+%s' % (h-1), 'magenta')
-    image.floodFillColor('0x0+%s+%s' % (w-1, h-1), 'magenta')
-    image.transparent('magenta')
+    image.floodFillColor('0x0', color)
+    image.floodFillColor('0x0+%s+0' % (w-1), color)
+    image.floodFillColor('0x0+0+%s' % (h-1), color)
+    image.floodFillColor('0x0+%s+%s' % (w-1, h-1), color)
+    image.transparent(color)
     return image
 def alpha_composite(image, mask):
     """ Composite two images together by overriding one opacity channel """
@@ -28,8 +33,10 @@ def alpha_composite(image, mask):
     return compos
 def remove_background(filename):
     """ Remove the background of the image in 'filename' """
-    img = pg.Image(filename)
+    img = pg.Image('input/' + filename)
     transmask = trans_mask_sobel(img)
-    img = alphacomposite(transmask, img)
+    img = alpha_composite(transmask, img)
     img.trim()
-    img.write('out.png')
+    img.write('out-'+ filename +'.png')
+for file_name in files:
+    remove_background(file_name)
