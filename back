@@ -1,0 +1,8 @@
+FROM python:3.6
+WORKDIR /app
+RUN apt-get update && apt-get install -y libgraphicsmagick++1-dev libboost-python-dev
+RUN apt-get install -y gcc
+ADD code.py .
+ADD requirements .
+RUN pip3 install --upgrade -r requirements
+CMD python code.py
